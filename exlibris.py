@@ -2,12 +2,17 @@
 
 from PIL import Image, ImageDraw
 import subprocess
+import os
 import sys
 
 
 class Exlibris:
-    def __init__(self, image_path, message):
+    def __init__(self, image_path, message, arcwidth):
         self.message = message
+        self.arcwidth = arcwidth
+
+        self.savefile = f"results/{self.message}.png"
+
         # encode message
         self.morse()
 
@@ -17,11 +22,16 @@ class Exlibris:
 
     def save(self):
         """Save image to file."""
-        self.savefile = f"results/{self.message}.png"
+        if not os.path.exists("results"):
+            os.path.mkdir("results")
         self.image.save(self.savefile)
 
     def show(self):
         """Display image file."""
+        if not os.path.exists(self.savefile):
+            print(f"error {self.savefile} not found.")
+            sys.exit()
+
         subprocess.run(["feh", self.savefile])
 
     def draw(self):
@@ -58,14 +68,13 @@ class Exlibris:
             colors = convert_rgb.getcolors(self.width * self.height)
             self.r, self.g, self.b = colors[0][1]
             self.ink = (self.r, self.g, self.b, 255)
-            self.paper = (self.r, self.g, self.b, 140)
+            self.paper = (self.r, self.g, self.b, 80)
 
         self.cursor = -180
 
         self.long = 1
         self.short = 0.2
         self.halfspace = 0.08
-        self.arcwidth = 8
 
         set_ratio()
         get_image_info()
@@ -132,6 +141,7 @@ class Exlibris:
             ")": "101101",
             " ": "_",
         }
+
         self.messagemorse = ""
         for c in self.message:
             self.messagemorse += morsedict[c] + " "
@@ -141,12 +151,16 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         message = sys.argv[1]
     else:
-        message = "FIREFLY"
+        message = "FREEDOM"
+
+    if len(sys.argv) > 2:
+        arcwidth = int(sys.argv[2])
+    else:
+        arcwidth = 6
 
     image_path = "ressources/owlraw.png"
 
-    exlibris = Exlibris(image_path, message)
-    # result.morse()
+    exlibris = Exlibris(image_path, message, arcwidth)
     exlibris.draw()
     exlibris.save()
     exlibris.show()
