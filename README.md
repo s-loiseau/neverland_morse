@@ -1,4 +1,6 @@
 # Neverland Exlibris Generator
+![](samples/EXLIBRIS.png)
+
 ## Purpose
 Convert a string to morse and generate a transparent png with the Neverland's owl.  
 Message start at 9 O'clock.  
