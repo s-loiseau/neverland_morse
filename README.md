@@ -7,10 +7,17 @@ Message start at 9 O'clock.
 Pillow  
 feh for preview  
 
+## Installation
+```
+git clone https://github.com/s-loiseau/neverland_morse.git
+cd neverland_morse
+pip install -r requirements.txt
+```  
+
 ## Usage
 ```
 python exlibris.py <STRING> <WIDTH>
-```
+```  
 
 ## Samples
 ### FREEDOM
@@ -18,6 +25,7 @@ python exlibris.py <STRING> <WIDTH>
 python exlibris.py FREEDOM 8
 ```  
 ![](samples/FREEDOM.png)
+
 ### RUN
 ```
 python exlibris.py RUN 13
