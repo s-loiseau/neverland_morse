@@ -1,17 +1,92 @@
 #!/usr/bin/env python
 
 from PIL import Image, ImageDraw
-import random
 import subprocess
 import sys
 
 
-class exlibris:
+class Exlibris:
     def __init__(self, image_path, message):
         self.message = message
-        self.image_path = image_path
+        # encode message
+        self.morse()
 
-        self.morsedict = {
+        self.image_path = image_path
+        self.image = Image.open(self.image_path)
+        self.output = ImageDraw.Draw(self.image)
+
+    def save(self):
+        """Save image to file."""
+        self.savefile = f"results/{self.message}.png"
+        self.image.save(self.savefile)
+
+    def show(self):
+        """Display image file."""
+        subprocess.run(["feh", self.savefile])
+
+    def draw(self):
+        def set_ratio():
+            """Calulate messagemorse length and set ratio 360/longueur."""
+            longueur = 0
+            for x in self.messagemorse:
+                if x == "0":
+                    longueur += self.short + self.halfspace
+                elif x == "1":
+                    longueur += self.long + self.halfspace
+                elif x in [" ", "_"]:
+                    longueur += 2 * self.halfspace
+            self.ratio = 360 / longueur
+
+        def drawarc(arclength, color):
+            # draw arc and update cursor
+            self.output.arc(
+                (0, 0, self.width, self.height),
+                start=self.cursor,
+                end=self.cursor + arclength,
+                fill=color,
+                width=self.arcwidth,
+            )
+            self.cursor = self.cursor + arclength
+
+        def get_image_info():
+            """Get r,g,b, width, height from image object."""
+            self.width, self.height = self.image.size
+
+            # find 2 main colors
+            quantized = self.image.quantize(colors=2, kmeans=3)
+            convert_rgb = quantized.convert("RGB")
+            colors = convert_rgb.getcolors(self.width * self.height)
+            self.r, self.g, self.b = colors[0][1]
+            self.ink = (self.r, self.g, self.b, 255)
+            self.paper = (self.r, self.g, self.b, 140)
+
+        self.cursor = -180
+
+        self.long = 1
+        self.short = 0.2
+        self.halfspace = 0.08
+        self.arcwidth = 8
+
+        set_ratio()
+        get_image_info()
+
+        # draw clear cirle.
+        drawarc(360, self.paper)
+
+        # loop draw ink arcs.
+        for x in self.messagemorse:
+            if x == "0":
+                drawarc(self.ratio * self.short, self.ink)
+            elif x == "1":
+                drawarc(self.ratio * self.long, self.ink)
+            elif x in [" ", "_"]:
+                self.cursor += self.ratio * self.halfspace
+
+            self.cursor += self.ratio * self.halfspace
+
+    def morse(self):
+        # define messagemorse
+        morsedict = {
             "A": "01",
             "B": "1000",
             "C": "1010",
@@ -57,87 +132,9 @@ class exlibris:
             ")": "101101",
             " ": "_",
         }
-
-    def save(self):
-        # savefile
-        self.savefile = f"results/{self.message}.png"
-        self.image.save(self.savefile)
-
-    def show(self):
-        # subprocess.run(["feh", "-B", "white", self.filename])
-        subprocess.run(["feh", self.savefile])
-
-    def get_image_info(self):
-        """return palette"""
-        self.width, self.height = self.image.size
-
-        quantized = self.image.quantize(colors=2, kmeans=3)
-        convert_rgb = quantized.convert("RGB")
-        self.colors = convert_rgb.getcolors(self.width * self.height)
-        self.r, self.g, self.b = self.colors[0][1]
-
-    def draw(self):
-        # encode message
-        self.morse()
-
-        self.image = Image.open(self.image_path)
-        self.cursor = -180
-
-        self.long = 1
-        self.short = 0.2
-        self.halfspace = 0.08
-
-        self.output = ImageDraw.Draw(self.image)
-
-        self.set_ratio()
-        self.get_image_info()
-
-        self.arcwidth = 8
-
-        ink = (self.r, self.g, self.b, 255)
-        paper = (self.r, self.g, self.b, 150)
-
-        def drawarc(arclength, color):
-            # draw arc and update cursor
-            self.output.arc(
-                (0, 0, self.width, self.height),
-                start=self.cursor,
-                end=self.cursor + arclength,
-                fill=color,
-                width=self.arcwidth,
-            )
-            self.cursor = self.cursor + arclength
-
-        # draw cirle
-        drawarc(360, paper)
-        # loop draw arc.
-        for x in self.messagemorse:
-            if x == "0":
-                drawarc(self.ratio * self.short, ink)
-            elif x == "1":
-                drawarc(self.ratio * self.long, ink)
-            elif x in [" ", "_"]:
-                self.cursor += self.ratio * self.halfspace
-
-            self.cursor += self.ratio * self.halfspace
-
-    def morse(self):
-        # define messagemorse
         self.messagemorse = ""
         for c in self.message:
-            self.messagemorse += self.morsedict[c] + " "
-
-    def set_ratio(self):
-        # define ratio
-        longueur = 0
-        for x in self.messagemorse:
-            if x == "0":
-                longueur += self.short + self.halfspace
-            elif x == "1":
-                longueur += self.long + self.halfspace
-            elif x in [" ", "_"]:
-                longueur += 2 * self.halfspace
-        self.ratio = 360 / longueur
+            self.messagemorse += morsedict[c] + " "
 
 
 if __name__ == "__main__":
@@ -148,8 +145,8 @@ if __name__ == "__main__":
 
     image_path = "ressources/owlraw.png"
 
-    result = exlibris(image_path, message)
+    exlibris = Exlibris(image_path, message)
     # result.morse()
-    result.draw()
-    result.save()
-    result.show()
+    exlibris.draw()
+    exlibris.save()
+    exlibris.show()
