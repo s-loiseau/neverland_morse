@@ -96,7 +96,7 @@ def longueur_message(messagemorse):
 
 
 short = 0.2
-long = 2
+long = 1
 halfspace = 0.08
 pen_width = 8
 cursor = -180
@@ -119,12 +119,13 @@ draw = ImageDraw.Draw(owl)
 
 r, g, b = palette[0][1]
 
-ink = (r + 10, g + 10, b + 10, 240)
-paper = (r, g, b, 30)
+ink = (r + 18, g + 18, b + 18, 250)
+paper = (r + 9, g + 9, b + 9, 200)
 dimension = (0, 0, width, height)
 
 # draw clear circle
 drawarc(360, pen_width, paper)
+# drawarc(360, 10, paper)
 
 for x in messagemorse:
     if x == "0":
